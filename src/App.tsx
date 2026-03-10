@@ -19,11 +19,18 @@ const ProtectedRoute = () => {
 
 const LandingPage = () => (
   <div className="relative min-h-screen w-full overflow-hidden font-sans selection:bg-brand-200">
-    {/* Background Wallpaper */}
+    {/* Background Wallpaper - Desktop */}
     <div
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transform scale-100"
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
       style={{
         backgroundImage: "url('/Anniks_16-9 with logo.jpeg')",
+      }}
+    />
+    {/* Background Wallpaper - Mobile */}
+    <div
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 md:hidden"
+      style={{
+        backgroundImage: "url('/Anniks_9-16.jpeg')",
       }}
     />
 
