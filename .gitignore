@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+*.db
+uploads/gallery/
+.DS_Store
+*.psd
+check_model.js
+check_models_2026.js
+list_models.js
+seed_history.js
