@@ -23,7 +23,7 @@ const LandingPage = () => (
     <div
       className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
       style={{
-        backgroundImage: "url('/Anniks_16-9 with logo.jpeg')",
+        backgroundImage: "url('/Anniks_16-9-logo.jpeg')",
       }}
     />
     {/* Background Wallpaper - Mobile */}
