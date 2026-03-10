@@ -34,8 +34,15 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100">
+        <div className="relative min-h-screen flex items-center justify-center bg-gray-50 overflow-hidden">
+            {/* Background - Desktop only */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
+              style={{ backgroundImage: "url('/Anniks_16-9-logo.jpeg')" }}
+            />
+            <div className="absolute inset-0 bg-black/20 z-0 hidden md:block" />
+
+            <div className="relative z-10 bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md border border-white/50">
                 <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Admin Login</h1>
 
                 {error && <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm font-medium">{error}</div>}

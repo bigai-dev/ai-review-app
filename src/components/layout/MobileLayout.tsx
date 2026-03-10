@@ -39,8 +39,15 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex justify-center font-sans antialiased">
-      <div className="w-full max-w-md bg-white shadow-2xl shadow-gray-200/50 min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50/50 flex justify-center font-sans antialiased relative">
+      {/* Background - Desktop only */}
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
+        style={{ backgroundImage: "url('/Anniks_16-9-logo.jpeg')" }}
+      />
+      <div className="fixed inset-0 bg-black/30 z-0 hidden md:block" />
+
+      <div className="relative z-10 w-full max-w-md bg-white shadow-2xl shadow-gray-200/50 min-h-screen flex flex-col overflow-hidden">
 
         {/* Ambient Background blobs */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[30%] bg-brand-100/50 rounded-full blur-3xl pointer-events-none opacity-60"></div>
