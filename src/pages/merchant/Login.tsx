@@ -36,7 +36,7 @@ export const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100">
-                <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Merchant Login</h1>
+                <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Admin Login</h1>
 
                 {error && <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm font-medium">{error}</div>}
 

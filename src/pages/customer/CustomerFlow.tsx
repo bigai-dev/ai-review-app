@@ -646,7 +646,7 @@ export const CustomerFlow = () => {
       </motion.div>
 
       {/* Selectors */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+      <motion.div variants={itemVariants}>
         <div className="space-y-2">
           <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
             <MapPin className="w-3.5 h-3.5 text-brand-500" /> {t.branch}
@@ -658,27 +658,6 @@ export const CustomerFlow = () => {
               className="w-full appearance-none py-3.5 px-4 text-sm font-medium border border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all shadow-sm hover:border-brand-300"
             >
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 group-hover:text-brand-500 transition-colors">
-              <ChevronRight className="w-4 h-4 rotate-90" />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
-            <User className="w-3.5 h-3.5 text-brand-500" /> {t.servedBy}
-          </label>
-          <div className="relative group">
-            <select
-              value={staffId}
-              onChange={(e) => setStaffId(e.target.value)}
-              className="w-full appearance-none py-3.5 px-4 text-sm font-medium border border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all shadow-sm hover:border-brand-300"
-            >
-              <option value="not_sure">{t.notSure}</option>
-              {availableStaff.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
             </select>
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 group-hover:text-brand-500 transition-colors">
               <ChevronRight className="w-4 h-4 rotate-90" />
@@ -984,7 +963,7 @@ export const CustomerFlow = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {bonus.map(p => {
               const isSelected = selectedPlatforms.includes(p);
               return (

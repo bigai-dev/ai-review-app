@@ -124,7 +124,7 @@ Platform style:
 - Google: 2-4 sentences, informative but warm. NO hashtags.
 - Facebook: Casual and conversational, like telling a friend. NOT excited/hype like XHS. Light emojis ok. NO hashtags.
 - Instagram: Short caption vibes. NO hashtags.
-- XHS (小红书): Story-style, enthusiastic discovery feel, 姐妹们 tone ok here. MUST end with hashtags: #KL养生 #无痛变美 #体态矫正 #骨盆修复 #小颜术 #身心疗愈
+- XHS (小红书): Story-style, enthusiastic discovery feel, 姐妹们 tone ok here. MUST end with hashtags: #无痛变美 #体态矫正 #骨盆修复 #小颜术 #身心疗愈
 
 When the customer selects a highlight, express it in a DIFFERENT way each time. Never repeat the same phrasing. Examples:
 - "Friendly Staff" → "she was really sweet", "the girl at the counter made me feel at ease", "staff were so patient with all my questions", "everyone there was super nice", "they really took care of me", "felt welcomed from the moment I walked in", "the team was warm and attentive", "no pressure at all, very chill staff", "loved how friendly everyone was", "they made the whole experience comfortable"
@@ -133,7 +133,6 @@ When the customer selects a highlight, express it in a DIFFERENT way each time. 
 - "Visible Results" → "saw the difference right after one session", "my posture looked completely different in the mirror", "the before and after was crazy", "couldn't believe the change after just one visit", "my jawline was visibly sharper immediately", "friends noticed the difference the same day", "the results were instant and real", "I could literally see my face shape change", "one session and my body alignment improved so much", "the transformation was visible straightaway"
 - "Pain-Free" → "honestly didn't feel any pain at all", "was so surprised how gentle it was", "I was dreading it but it was completely painless", "way more comfortable than I expected", "no pain, just a really soothing session", "they adjusted the pressure to my comfort level", "I'm someone who's scared of pain but this was totally fine", "the whole thing was so gentle I almost fell asleep", "nothing like those painful bone-cracking places", "they really live up to the pain-free promise"
 - "Good Value" → "great price for what you get", "honestly didn't expect this quality at that price", "worth every sen", "way more value than I expected", "you get a lot for the money", "compared to other places this is a steal", "the results you get for the price is impressive", "really reasonable for the quality", "I'd pay more honestly, it was that good", "best bang for your buck"
-- "Non-Invasive" → "no surgery, no needles, just their hands", "love that it's completely natural and non-invasive", "no downtime at all, went straight back to work", "the fact that they can do this without any surgery is amazing", "zero recovery time needed", "all done with manual techniques, no machines poking you", "it's the safest approach I've seen for body sculpting", "no chemicals, no injections, just skilled hands", "I was skeptical but the non-invasive method actually works", "perfect for people who want results without going under the knife"
 - "Holistic Approach" → "they don't just fix one area, they look at your whole body", "loved how they addressed the root cause not just symptoms", "the 3-step approach really makes sense", "they explained how everything is connected", "it's not just about looking good, they care about your overall health", "the whole-body approach is what sets them apart", "they treated my posture issue by looking at everything from my spine to my pelvis", "finally a place that doesn't just do surface-level fixes", "they combine physical correction with wellness which is so rare", "the holistic method gave me way better results than targeted treatments elsewhere"
 - "Body & Mind Wellness" → "left feeling physically and mentally refreshed", "it's not just body work, they take care of your mental state too", "the session was like therapy for my body and mind", "I felt so much lighter emotionally after", "they combine wellness with beauty in a way I haven't seen before", "the whole experience was healing on every level", "came for body sculpting but left with inner peace too", "Malaysia's first body and mind wellness combo and I can see why", "the mind-body connection they create is special", "it's wellness in the truest sense"
 
@@ -155,7 +154,7 @@ that post-session glow tho ✨ jawline looking sharper after one visit @ Anniks 
 Baru try Posture Sculpting kat Anniks Beauty. Badan rasa lega gila lepas tu, postur pun nampak lain 😊 Florence sangat gentle, explain semua step. Memang puas hati.
 
 [XHS, CN, 5★]
-姐妹们！今天去了Anniks Beauty做了美骨小颜术 🌿 做完脸型真的变小了～完全不痛，差点睡着哈哈 推荐给想变美又怕痛的姐妹！#KL养生 #无痛变美 #体态矫正 #小颜术 #身心疗愈
+姐妹们！今天去了Anniks Beauty做了美骨小颜术 🌿 做完脸型真的变小了～完全不痛，差点睡着哈哈 推荐给想变美又怕痛的姐妹！#无痛变美 #体态矫正 #小颜术 #身心疗愈
 
 [Google, CN, 4★]
 第一次来Anniks Beauty做体态塑形，感觉还不错。体态确实有改善，Annika手法很轻柔。整体体验蛮好的 😊
@@ -1385,6 +1384,19 @@ app.get('/api/submissions/:id/proofs', async (req, res) => {
         const proofs = JSON.parse(row.proofs || '[]');
         res.json({ proofs });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Upload proofs separately (to avoid Vercel body size limit)
+app.put('/api/submissions/:id/proofs', async (req, res) => {
+    const { id } = req.params;
+    const { proofs } = req.body;
+    try {
+        await pool.query("UPDATE submissions SET proofs = $1 WHERE id = $2", [JSON.stringify(proofs || []), id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Proof upload error:", err);
         res.status(500).json({ error: err.message });
     }
 });

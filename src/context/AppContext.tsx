@@ -55,11 +55,33 @@ export const AppProvider: React.FC<PropsWithChildren> = ({ children }) => {
     setSubmissions(prev => [sub, ...prev]);
 
     try {
-      await fetch('/api/submissions', {
+      // Strip base64 image data from proofs to stay under Vercel's 4.5MB body limit
+      const lightProofs = (sub.proofs || []).map(p => ({
+        ...p,
+        content: p.type === 'image' ? '[image]' : p.content
+      }));
+      const lightSub = { ...sub, proofs: lightProofs };
+
+      const res = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub)
+        body: JSON.stringify(lightSub)
       });
+
+      if (!res.ok) {
+        console.error("Failed to save submission:", res.status, await res.text());
+        return;
+      }
+
+      // Upload full proofs with base64 images separately
+      const imageProofs = (sub.proofs || []).filter(p => p.type === 'image' && p.content && p.content !== '[image]');
+      if (imageProofs.length > 0) {
+        await fetch(`/api/submissions/${sub.id}/proofs`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proofs: sub.proofs })
+        }).catch(err => console.error("Failed to upload proofs:", err));
+      }
     } catch (err) {
       console.error("Failed to save submission:", err);
     }
