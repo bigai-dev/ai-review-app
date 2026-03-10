@@ -348,8 +348,13 @@ const Lightbox = ({ src, onClose }: { src: string; onClose: () => void }) => {
 };
 
 // --- Helper: Get Platform URL ---
-const getPlatformUrl = (platform: Platform) => {
-  if (platform === Platform.GOOGLE) return "https://g.page/r/TBD/review"; // TODO: Replace with Anniks Beauty Google review links per branch
+const GOOGLE_REVIEW_URLS: Record<string, string> = {
+  'b1': 'https://g.page/r/CXwKz-qtcs_GEAE/review',  // Cheras (KL)
+  'b2': 'https://g.page/r/CeVr6wsgf0G0EAE/review',  // Penang
+};
+
+const getPlatformUrl = (platform: Platform, branchId?: string) => {
+  if (platform === Platform.GOOGLE) return GOOGLE_REVIEW_URLS[branchId || 'b1'] || GOOGLE_REVIEW_URLS['b1'];
   if (platform === Platform.FACEBOOK) return "https://www.facebook.com/AnniksBeauty/reviews";
   if (platform === Platform.INSTAGRAM) return "https://www.instagram.com/create/story";
   if (platform === Platform.XHS) return "https://www.xiaohongshu.com";
@@ -361,12 +366,14 @@ const RedirectModal = ({
   platform,
   isOpen,
   onClose,
-  t
+  t,
+  branchId
 }: {
   platform: Platform | null;
   isOpen: boolean;
   onClose: () => void;
   t: typeof TRANSLATIONS['en'];
+  branchId?: string;
 }) => {
   if (!isOpen || !platform) return null;
 
@@ -411,7 +418,7 @@ const RedirectModal = ({
       // XHS has no web posting page — try app deep link directly
       window.location.href = 'xhsdiscover://';
     } else {
-      const url = getPlatformUrl(platform);
+      const url = getPlatformUrl(platform, branchId);
       window.open(url, '_blank');
     }
     onClose();
@@ -1744,6 +1751,7 @@ export const CustomerFlow = () => {
             isOpen={!!redirectPlatform}
             onClose={() => setRedirectPlatform(null)}
             t={t}
+            branchId={branchId}
           />
         )}
       </AnimatePresence>
