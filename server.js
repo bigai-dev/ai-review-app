@@ -99,10 +99,35 @@ const galleryUpload = multer({
 
 const apiKey = process.env.VITE_GEMINI_API_KEY;
 
+// --- Customer Persona Pool ---
+// Each persona gives the AI a unique life situation to write from.
+// On each generation, 3 are randomly selected (Fisher-Yates) so every draft sounds like a different person.
+const CUSTOMER_PERSONAS = [
+    "30s office worker with desk posture problems. Sits 10 hours a day, back and neck always aching.",
+    "Mom of two toddlers, finally carved out 'me time'. Husband watching the kids for once.",
+    "Came with her bestie who's a regular. Was skeptical about non-invasive body sculpting actually working.",
+    "Loyal client, 5th visit. Already saw her jawline change, here for posture correction now.",
+    "Getting married in 2 months. Wants her face shape and posture to look perfect in the wedding photos.",
+    "Tried chiropractor and massage before for her posture. Nothing stuck long-term.",
+    "Colleague's face literally changed after a few sessions. Had to find out what this place does.",
+    "40s professional, noticing her body shape shifting after pregnancy. Looking for something gentle that actually works.",
+    "Saw Anniks on XHS/小红书, the before-after photos looked real so decided to try.",
+    "Birthday treat to herself. Splurged on the full facial contour package.",
+    "Scared of pain. Tried bone-setting before and it was traumatic. Very cautious this time.",
+    "Auntie who's done every facial and body treatment out there. Hard to impress.",
+    "Brought her mother here for posture correction. Reviewing on mom's behalf.",
+    "Post-CNY recovery. Face puffy, body stiff from too much eating and sitting around.",
+    "Stressed from work deadlines, posture getting worse, jaw clenching at night. Needed a reset.",
+    "Fitness girl who works out regularly but can't fix her pelvic tilt on her own.",
+    "New mom dealing with postpartum body changes. Looking for gentle recovery options."
+];
+
 const PROMPTS_SYSTEM_INSTRUCTION = `
 You are writing as a REAL CUSTOMER, not a brand, not a marketer, not an influencer.
 Write reviews for "Anniks Beauty", a body sculpting, posture correction & wellness studio in Malaysia (branches in Cheras & Penang). Founded in 2019, they advocate "养生年轻化" (wellness for the younger generation, prevention over cure).
 Sound like a real person posting on social media — not an ad, not a brochure.
+
+You will be given a customer persona. Write from their perspective — let their life situation, motivations, and personality shape the review naturally. Do NOT state the persona details literally. Let them color your word choice, what you notice, and how you feel about the experience.
 
 Key context about Anniks Beauty:
 - Pain-free, non-invasive treatments (they use the gentlest approach and adjust to each client's tolerance)
@@ -119,6 +144,22 @@ Core principles:
 - Never use "—" (em dash).
 - If rating is 1-3: honest disappointment. If 4-5: genuinely happy.
 - Use emojis on Facebook/Instagram/XHS. Google: 1-2 max.
+
+BEFORE-STATE CONTRAST: When expressing a highlight, establish a relatable BEFORE state first, then show the contrast. This creates a mini story arc:
+- "Friendly Staff" -> mention being nervous or unsure walking in, then how staff put you at ease
+- "Clean Environment" -> mention having been to dodgy/average places before, or not expecting much from a wellness studio
+- "Professional Therapists" -> mention not understanding your own body issues, then how the therapist explained and educated you
+- "Visible Results" -> mention living with the problem (crooked jaw, bad posture, puffy face), then the visible change after
+- "Pain-Free" -> mention dreading it based on past experiences (chiropractor, bone-setting), then how surprisingly gentle it was
+- "Good Value" -> mention expecting it to cost more for this level of treatment, or comparing to pricier clinics
+- "Holistic Approach" -> mention going to places that only fix one thing, then how Anniks looked at the whole picture
+- "Body & Mind Wellness" -> mention feeling physically and mentally drained before, then the combined relief after
+
+MICRO-DETAILS: Sprinkle in ONE small sensory or experiential detail to ground the review in reality. Pick only ONE per review:
+- Physical: "the muscle relaxation part was so soothing", "felt my jaw click into place gently", "the bone realignment step was oddly satisfying", "my shoulders dropped like 2 inches during the session"
+- Environment: "the treatment room was so quiet and calming", "the whole place smelled clean, not perfume-y", "the lighting was soft, very relaxing", "the consultation area had a full-length mirror so you can see before/after"
+- After-effects: "kept checking my jawline in every mirror I passed", "my colleague asked if I lost weight (it was just better posture)", "husband said my face looked different", "took a selfie right after and my face shape actually changed", "posture was still noticeably better the next morning"
+- Little touches: "they showed me my posture analysis on screen", "no hard sell at the end which I really appreciated", "she explained exactly what she was doing at each step", "they took before and after photos so I could compare"
 
 Platform style:
 - Google: 2-4 sentences, informative but warm. NO hashtags.
@@ -233,9 +274,19 @@ ${knowledgeContext}
 
 Write one review draft as this customer.`;
 
-        // Make 3 parallel API calls, each with a different persona angle
-        const draftPromises = draftAngles.map(({ angle, instruction }) => {
-            const prompt = `[${angle}]: ${instruction}\n\n${baseScenario}`;
+        // Fisher-Yates shuffle to pick 3 unique personas
+        const shuffled = [...CUSTOMER_PERSONAS];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const selectedPersonas = shuffled.slice(0, 3);
+        console.log('[generate-reviews] Selected personas:', selectedPersonas);
+
+        // Make 3 parallel API calls, each with a different persona angle + unique persona
+        const draftPromises = draftAngles.map(({ angle, instruction }, index) => {
+            const persona = selectedPersonas[index];
+            const prompt = `[${angle}]: ${instruction}\nYou are: ${persona}. Let this shape your story naturally.\n\n${baseScenario}`;
             return ai.models.generateContent({
                 model: modelName,
                 contents: prompt,
