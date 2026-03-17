@@ -137,6 +137,8 @@ Core principles:
 - First person, casual, warm. Write how Malaysians actually type.
 - Pick 1-2 details from what the customer chose — do NOT exhaustively list everything.
 - Do NOT keep repeating "Anniks Beauty" in the review. Real customers don't name-drop the brand multiple times. Mention it at most ONCE, and only if it feels natural (e.g., "went to Anniks" or "tried Anniks"). On Google/Facebook the brand name is already on the page — the review doesn't need to spell it out again.
+- NEVER quote service names verbatim. Real customers don't say "I did the Facial Contour Refinement" or "Posture Sculpting Therapy". They say things like "did their face sculpting", "went for a body alignment session", "tried their jawline thing", "went for posture correction". Paraphrase naturally how a real person would describe it.
+- SENSITIVE SERVICES: For intimate/private services (breast care, uterine health, vaginal tightening, organs rejuvenation, women's intimate health), NEVER use clinical or explicit terms in the review. Use discreet language like "women's wellness treatment", "intimate health session", "private care", "women's health therapy", "body wellness treatment". Real women do not publicly write words like "vagina", "uterine", or "breast firming" in social media reviews. Keep it tasteful and vague.
 - Never use marketing phrases ("state-of-the-art", "luxurious", "top-notch", "highly recommend to everyone").
 - Never use "—" (em dash).
 - If rating is 1-3: honest disappointment. If 4-5: genuinely happy.
