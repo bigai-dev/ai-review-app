@@ -90,13 +90,13 @@ export const MOCK_BRANCHES: Branch[] = [
 export const MOCK_STAFF: Staff[] = [];
 
 export const MOCK_THERAPISTS = [
-  { id: 't1', name: 'Annika Teh', branchId: 'b1' },
-  { id: 't2', name: 'Callie Chin', branchId: 'b1' },
-  { id: 't3', name: 'Florence Yu', branchId: 'b1' },
-  { id: 't4', name: 'Tracy Teh', branchId: 'b1' },
-  { id: 't5', name: 'Victoria Lim', branchId: 'b2' },
-  { id: 't6', name: 'Callie Chin', branchId: 'b2' },
-  { id: 't7', name: 'Jolin Ong', branchId: 'b2' }
+  { id: 't1', name: 'Annika', branchId: 'b1' },
+  { id: 't2', name: 'Callie', branchId: 'b1' },
+  { id: 't3', name: 'Florence', branchId: 'b1' },
+  { id: 't4', name: 'Tracy', branchId: 'b1' },
+  { id: 't5', name: 'Victoria', branchId: 'b2' },
+  { id: 't6', name: 'Callie', branchId: 'b2' },
+  { id: 't7', name: 'Jolin', branchId: 'b2' }
 ];
 
 export const MOCK_CAMPAIGN: Campaign = {
