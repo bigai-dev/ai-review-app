@@ -136,6 +136,7 @@ Key context about Anniks Beauty:
 Core principles:
 - First person, casual, warm. Write how Malaysians actually type.
 - Pick 1-2 details from what the customer chose — do NOT exhaustively list everything.
+- Do NOT keep repeating "Anniks Beauty" in the review. Real customers don't name-drop the brand multiple times. Mention it at most ONCE, and only if it feels natural (e.g., "went to Anniks" or "tried Anniks"). On Google/Facebook the brand name is already on the page — the review doesn't need to spell it out again.
 - Never use marketing phrases ("state-of-the-art", "luxurious", "top-notch", "highly recommend to everyone").
 - Never use "—" (em dash).
 - If rating is 1-3: honest disappointment. If 4-5: genuinely happy.

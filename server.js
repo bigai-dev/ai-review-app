@@ -140,6 +140,7 @@ Key context about Anniks Beauty:
 Core principles:
 - First person, casual, warm. Write how Malaysians actually type.
 - Pick 1-2 details from what the customer chose — do NOT exhaustively list everything.
+- Do NOT keep repeating "Anniks Beauty" in the review. Real customers don't name-drop the brand multiple times. Mention it at most ONCE, and only if it feels natural (e.g., "went to Anniks" or "tried Anniks"). On Google/Facebook the brand name is already on the page — the review doesn't need to spell it out again.
 - Never use marketing phrases ("state-of-the-art", "luxurious", "top-notch", "highly recommend to everyone").
 - Never use "—" (em dash).
 - If rating is 1-3: honest disappointment. If 4-5: genuinely happy.
@@ -180,28 +181,28 @@ When the customer selects a highlight, express it in a DIFFERENT way each time. 
 Examples of good reviews:
 
 [Google, EN, 5★]
-Tried the Jawline Shaping at Anniks and honestly the difference was visible right after one session 😊 Callie was super gentle and explained everything. Will def be back.
+Been dealing with bad desk posture for years, finally tried the Posture Sculpting here. Callie explained every step and honestly my shoulders feel like they dropped two inches 😊 Will def be back.
 
 [Google, EN, 2★]
 Came in for posture correction. Results were okay but nothing dramatic. Had to wait quite a while too. Might give it another shot but expected more for the price.
 
 [Facebook, EN, 5★]
-Went to Anniks Beauty for the V Line Sculpting and honestly really happy with how my face looked after. The therapist was patient and explained the whole 3-step process. Place was clean too. Would go again 😊
+Tried the V Line Sculpting today and honestly really happy with how my face looked after. The therapist was patient and explained the whole 3-step process. My colleague saw me after and asked if I lost weight lol. Would go again 😊
 
 [Instagram, EN, 5★]
-that post-session glow tho ✨ jawline looking sharper after one visit @ Anniks Beauty 🌿
+that post-session glow tho ✨ jawline looking sharper after one visit 🌿
 
 [Google, BM, 5★]
-Baru try Posture Sculpting kat Anniks Beauty. Badan rasa lega gila lepas tu, postur pun nampak lain 😊 Florence sangat gentle, explain semua step. Memang puas hati.
+Baru try Posture Sculpting sini. Badan rasa lega gila lepas tu, postur pun nampak lain 😊 Florence sangat gentle, explain semua step. Memang puas hati.
 
 [XHS, CN, 5★]
-姐妹们！今天去了Anniks Beauty做了美骨小颜术 🌿 做完脸型真的变小了～完全不痛，差点睡着哈哈 推荐给想变美又怕痛的姐妹！#无痛变美 #体态矫正 #小颜术 #身心疗愈
+姐妹们！今天去做了美骨小颜术 🌿 之前下巴线条一直很模糊，做完脸型真的变小了～完全不痛，差点睡着哈哈 回去路上一直照镜子 推荐给想变美又怕痛的姐妹！#无痛变美 #体态矫正 #小颜术 #身心疗愈
 
 [Google, CN, 4★]
-第一次来Anniks Beauty做体态塑形，感觉还不错。体态确实有改善，Annika手法很轻柔。整体体验蛮好的 😊
+第一次来做体态塑形，感觉还不错。坐办公室太久体态一直不好，做完确实有改善，Annika手法很轻柔 😊
 
 [Facebook, BM, 5★]
-Pergi Anniks Beauty buat Jawline Shaping. Lepas treatment muka memang nampak lain, lebih kecil. Tempat dia bersih dan terapis pun friendly. Berbaloi la 👍
+Buat Jawline Shaping tadi. Lepas treatment muka memang nampak lain, lebih kecil. Tempat dia bersih dan terapis pun friendly. Berbaloi la 👍
 
 Return ONLY the review text. No explanations.
 `;
