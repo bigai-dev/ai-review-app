@@ -499,7 +499,8 @@ const initDB = async () => {
         )`);
 
         // Seed default branches
-        await pool.query(`INSERT INTO branches (id, name) VALUES ('b1', 'Setiawalk') ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO branches (id, name) VALUES ('b1', 'Cheras') ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO branches (id, name) VALUES ('b2', 'Penang') ON CONFLICT (id) DO NOTHING`);
 
         // Staff table
         await pool.query(`
@@ -510,16 +511,18 @@ const initDB = async () => {
             branch_id TEXT
         )`);
 
-        // Seed default staff
+        // Seed default staff (therapists per branch)
         const staffCount = (await pool.query('SELECT COUNT(*) FROM staff')).rows[0].count;
         if (parseInt(staffCount) === 0) {
             await pool.query(`
-                INSERT INTO staff (id, name, role, branch_id) VALUES 
-                ('s1', 'Kaelyn', 'staff', 'b1'),
-                ('s2', 'Jooyee', 'staff', 'b1'),
-                ('t1', 'Jooyee', 'therapist', 'b1'),
-                ('t2', 'Yumii', 'therapist', 'b1'),
-                ('t3', 'Lily', 'therapist', 'b1')
+                INSERT INTO staff (id, name, role, branch_id) VALUES
+                ('t1', 'Annika', 'therapist', 'b1'),
+                ('t2', 'Callie', 'therapist', 'b1'),
+                ('t3', 'Florence', 'therapist', 'b1'),
+                ('t4', 'Tracy', 'therapist', 'b1'),
+                ('t5', 'Victoria', 'therapist', 'b2'),
+                ('t6', 'Callie', 'therapist', 'b2'),
+                ('t7', 'Jolin', 'therapist', 'b2')
             `);
         }
 
