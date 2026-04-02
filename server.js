@@ -7,8 +7,8 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createClient } from '@supabase/supabase-js';
 import { createClient as createTursoClient } from '@libsql/client';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 // ES Module dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -75,12 +75,19 @@ const authenticateToken = (req, res, next) => {
 // For now, we'll assume any authenticated user can access (or implement basic role check if payload existed)
 
 
-// Initialize Supabase Client (for Storage)
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL; // Flexible for Vite/Node env
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Initialize Cloudflare R2 Client (for gallery image storage)
+const r2 = new S3Client({
+    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+});
+const R2_BUCKET = 'anniks-gallery';
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
 
-// Configure multer for memory storage (buffer) to upload to Supabase
+// Configure multer for memory storage (buffer) to upload to R2
 const galleryStorage = multer.memoryStorage();
 
 const galleryUpload = multer({
@@ -884,25 +891,20 @@ app.post('/api/gallery/upload', authenticateToken, galleryUpload.array('images')
             const fileExt = path.extname(file.originalname);
             const fileName = `gal-${Date.now()}-${Math.random().toString(36).substr(2, 5)}${fileExt}`;
 
-            // Upload to Supabase Storage ('gallery' bucket)
-            const { data, error } = await supabase.storage
-                .from('gallery')
-                .upload(fileName, file.buffer, {
-                    contentType: file.mimetype,
-                    upsert: false
-                });
-
-            if (error) {
-                console.error("Supabase Upload Error:", error);
+            // Upload to Cloudflare R2
+            try {
+                await r2.send(new PutObjectCommand({
+                    Bucket: R2_BUCKET,
+                    Key: fileName,
+                    Body: file.buffer,
+                    ContentType: file.mimetype,
+                }));
+            } catch (uploadErr) {
+                console.error("R2 Upload Error:", uploadErr);
                 continue; // Skip failed upload
             }
 
-            // Get Public URL
-            const { data: publicData } = supabase.storage
-                .from('gallery')
-                .getPublicUrl(fileName);
-
-            const publicUrl = publicData.publicUrl;
+            const publicUrl = `${R2_PUBLIC_URL}/${fileName}`;
 
             // Save metadata to Database
             const id = 'gal-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5); // DB ID
@@ -984,14 +986,14 @@ app.delete('/api/gallery/:id', authenticateToken, async (req, res) => {
         // Delete from database first
         const deleteResult = await pool.query("DELETE FROM gallery_images WHERE id = $1", [id]);
 
-        // Delete file from Supabase Storage
-        // Note: Supabase remove expects an array of filenames
-        const { error } = await supabase.storage
-            .from('gallery')
-            .remove([row.filename]);
-
-        if (error) {
-            console.error("Supabase Deletion Error:", error);
+        // Delete file from Cloudflare R2
+        try {
+            await r2.send(new DeleteObjectCommand({
+                Bucket: R2_BUCKET,
+                Key: row.filename,
+            }));
+        } catch (r2Err) {
+            console.error("R2 Deletion Error:", r2Err);
         }
 
         invalidateCache('gallery');
