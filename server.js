@@ -331,6 +331,9 @@ Write one review draft as this customer.`;
 });
 
 // --- Database Setup (Turso/libSQL) ---
+console.log('[init] TURSO_DATABASE_URL set:', !!process.env.TURSO_DATABASE_URL);
+console.log('[init] TURSO_AUTH_TOKEN set:', !!process.env.TURSO_AUTH_TOKEN);
+console.log('[init] R2_ENDPOINT set:', !!process.env.R2_ENDPOINT);
 const turso = createTursoClient({
     url: process.env.TURSO_DATABASE_URL,
     authToken: process.env.TURSO_AUTH_TOKEN
@@ -528,7 +531,7 @@ const initDB = async () => {
     }
 };
 
-initDB();
+initDB().catch(err => console.error('[initDB] Unhandled error:', err));
 
 // Now that db is initialized, set up the real getAiConfig function
 // getAiConfig is now defined at the top level and uses the pool directly.
