@@ -2,13 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
+console.log('[boot] dotenv loaded, TURSO_DATABASE_URL set:', !!process.env.TURSO_DATABASE_URL, 'R2_ENDPOINT set:', !!process.env.R2_ENDPOINT);
 import { GoogleGenAI, Type } from "@google/genai";
+console.log('[boot] GoogleGenAI imported');
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+console.log('[boot] about to import libsql');
 import { createClient as createTursoClient } from '@libsql/client/web';
+console.log('[boot] libsql imported');
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+console.log('[boot] S3Client imported');
 
 // ES Module dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
