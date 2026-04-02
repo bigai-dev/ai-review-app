@@ -7,9 +7,8 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// Force IPV4 for Supabase connection (fixes ENETUNREACH on Render)
-import { promises as dns } from 'dns';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createTursoClient } from '@libsql/client';
 
 // ES Module dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -324,34 +323,28 @@ Write one review draft as this customer.`;
     }
 });
 
-// --- Database Setup ---
-// --- Database Setup ---
-// --- Database Initialization ---
-import pg from 'pg';
-const { Pool } = pg;
-let pool;
-try {
-    pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-        }
-    });
-} catch (error) {
-    console.error("Failed to initialize pool:", error);
-}
-
-pool.connect((err, client, release) => {
-    if (err) {
-        return console.error('Error acquiring client', err.stack);
-    }
-    console.log('Connected to Supabase/Postgres database.');
-    release();
-    initDB();
+// --- Database Setup (Turso/libSQL) ---
+const turso = createTursoClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN
 });
 
-// Helper to run queries
-const query = (text, params) => pool.query(text, params);
+// Compatibility layer: converts pg-style $1,$2 params to ? for libSQL
+const pool = {
+    query: async (sql, params = []) => {
+        const convertedSql = sql.replace(/\$\d+/g, '?');
+        const result = await turso.execute({
+            sql: convertedSql,
+            args: params
+        });
+        return {
+            rows: result.rows,
+            rowCount: result.rowsAffected
+        };
+    }
+};
+
+console.log('Turso database client initialized.');
 
 // Initialize Tables
 const initDB = async () => {
@@ -475,7 +468,7 @@ const initDB = async () => {
 
         // Migration: Add url column if it doesn't exist
         try {
-            await pool.query("ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS url TEXT");
+            await pool.query("ALTER TABLE gallery_images ADD COLUMN url TEXT");
         } catch (e) {
             console.log("Migration note: url column already exists or error ignored");
         }
@@ -489,7 +482,7 @@ const initDB = async () => {
     )`);
 
         // Seed default gallery settings
-        await pool.query(`INSERT INTO gallery_settings (id, allow_multiple_uses, updated_at) VALUES ('default', 0, NOW()) ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO gallery_settings (id, allow_multiple_uses, updated_at) VALUES ('default', 0, datetime('now')) ON CONFLICT (id) DO NOTHING`);
 
         // Branches table
         await pool.query(`
@@ -1336,18 +1329,21 @@ app.get('/api/dashboard/stats', async (req, res) => {
         // Single query for all submission stats + platform data (was 5 separate queries)
         const [visitsResult, subsResult] = await Promise.all([
             pool.query(`SELECT COUNT(*) as count FROM visits WHERE timestamp >= $1`, [timeFilter]),
-            pool.query(`SELECT COUNT(*) as total, COUNT(CASE WHEN status = 'Verified' THEN 1 END) as verified, AVG(rating) as avg_rating, array_agg(platformsselected) as platforms FROM submissions WHERE timestamp >= $1`, [timeFilter])
+            pool.query(`SELECT COUNT(*) as total, COUNT(CASE WHEN status = 'Verified' THEN 1 END) as verified, AVG(rating) as avg_rating, GROUP_CONCAT(platformsSelected, '|||') as platforms FROM submissions WHERE timestamp >= $1`, [timeFilter])
         ]);
 
         const subRow = subsResult.rows[0] || {};
         const platformCounts = {};
-        (subRow.platforms || []).forEach(platformsJson => {
-            if (!platformsJson) return;
-            try {
-                const platforms = JSON.parse(platformsJson);
-                platforms.forEach(p => platformCounts[p] = (platformCounts[p] || 0) + 1);
-            } catch (e) { }
-        });
+        const platformsRaw = subRow.platforms;
+        if (platformsRaw) {
+            platformsRaw.split('|||').forEach(platformsJson => {
+                if (!platformsJson) return;
+                try {
+                    const platforms = JSON.parse(platformsJson);
+                    platforms.forEach(p => platformCounts[p] = (platformCounts[p] || 0) + 1);
+                } catch (e) { }
+            });
+        }
 
         const stats = {
             visits: parseInt(visitsResult.rows[0]?.count || 0),
@@ -1414,7 +1410,7 @@ app.get('/api/submissions', async (req, res) => {
                 feedback: row.feedback,
                 status: row.status,
                 timestamp: row.timestamp,
-                rewardClaimed: !!row.rewardclaimed,
+                rewardClaimed: !!(row.rewardClaimed ?? row.rewardclaimed),
                 staffName: row.staffName || row.staffname || 'Unknown',
                 therapistName: row.therapistName || row.therapistname || 'Unknown',
                 luckyDrawTicket: row.luckydrawticket || row.luckyDrawTicket,
