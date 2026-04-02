@@ -7,7 +7,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createClient as createTursoClient } from '@libsql/client';
+import { createClient as createTursoClient } from '@libsql/client/web';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 // ES Module dirname equivalent
