@@ -179,7 +179,7 @@ async function generateDraft(systemPrompt, userPrompt, temperature) {
     }
     // Fallback to MiniMax highspeed
     if (minimaxApiKey) {
-        return await callMiniMax(minimaxApiKey, 'gemini-2.5-flash-lite-highspeed', systemPrompt, userPrompt, temperature);
+        return await callMiniMax(minimaxApiKey, 'MiniMax-M2.7-highspeed', systemPrompt, userPrompt, temperature);
     }
     throw new Error('No AI provider available');
 }

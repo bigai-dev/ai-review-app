@@ -32,7 +32,7 @@ async function fetchWithRetry(params: GenerateParams): Promise<Response> {
         throw new Error("Review generation temporarily unavailable. Please try again.");
       }
 
-      lastError = new Error(`Server error ${response.status}`);
+      lastError = new Error("Review generation temporarily unavailable. Please try again.");
     } catch (err: any) {
       lastError = err;
     }
