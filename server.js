@@ -395,7 +395,7 @@ app.post('/api/generate-reviews', async (req, res) => {
             { angle: "ATMOSPHERE FOCUS", instruction: "Focus on the vibe — people, environment, comfort, little details that made the visit memorable." }
         ];
 
-        // Build the base scenario (shared across all 3 drafts)
+        // Build the base scenario (shared across all 3 drafts, WITHOUT therapist line)
         const baseScenario = `A customer just visited Anniks Beauty and had: ${servicesStr}.
 Platform: ${platform}. ${langInstruction}
 ${platformStyle}
@@ -405,10 +405,17 @@ Tone: ${tone}. Length: ${lengthGuide}
 MATERIAL TO DRAW FROM (use selectively, not exhaustively):
 ${highlightsStr ? `- Customer felt: ${highlightsStr}` : ""}
 ${staffStr ? `- Helped by: ${staffStr}` : ""}
-${therapistStr ? `- Therapist: ${therapistStr}` : ""}
 ${knowledgeContext}
 
 Write one review draft as this customer.`;
+
+        // Therapist mention modes - shuffled per generation so each draft handles it differently
+        // Real reviews: some name the therapist, some say "the therapist/she", some don't mention anyone
+        const therapistModes = ['named', 'anonymous', 'omitted'];
+        for (let i = therapistModes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [therapistModes[i], therapistModes[j]] = [therapistModes[j], therapistModes[i]];
+        }
 
         // Fisher-Yates shuffle to pick 3 unique personas
         const shuffled = [...CUSTOMER_PERSONAS];
@@ -423,7 +430,20 @@ Write one review draft as this customer.`;
         // Primary: Gemini Flash Lite (~0.9s) | Fallback: MiniMax-highspeed (~1.2s)
         const draftPromises = draftAngles.map(({ angle, instruction }, index) => {
             const persona = selectedPersonas[index];
-            const prompt = `[${angle}]: ${instruction}\nYou are: ${persona}. Let this shape your story naturally.\n\n${baseScenario}`;
+
+            // Per-draft therapist mention
+            let therapistLine = '';
+            if (therapistStr) {
+                const mode = therapistModes[index];
+                if (mode === 'named') {
+                    therapistLine = `\n- Therapist: ${therapistStr}`;
+                } else if (mode === 'anonymous') {
+                    therapistLine = `\n- A therapist helped you. Do NOT mention any name. Just say "the therapist", "she", or "the girl who helped me".`;
+                }
+                // 'omitted' = no therapist line at all
+            }
+
+            const prompt = `[${angle}]: ${instruction}\nYou are: ${persona}. Let this shape your story naturally.\n\n${baseScenario.replace('\nWrite one review draft as this customer.', `${therapistLine}\n\nWrite one review draft as this customer.`)}`;
             return generateDraft(systemPrompt, prompt, temperature);
         });
 
