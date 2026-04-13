@@ -338,6 +338,16 @@ app.post('/api/generate-reviews', async (req, res) => {
         const lengthGuide = length === 'Short' ? "STRICTLY 1-2 sentences only. Keep it brief and punchy — no more." : length === 'Medium' ? "3-4 sentences, conversational flow." : "6-8 sentences with storytelling — describe the visit, treatment, and how you felt after in detail.";
         const ratingGuide = rating <= 3 ? "The customer was disappointed — write an honest, measured review reflecting that." : "The customer loved it — write a genuinely happy review.";
 
+        // Platform-specific style enforcement (injected into each draft prompt)
+        const platformStyles = {
+            'Google': 'STYLE: Google Review. 2-4 sentences, informative but warm. NO hashtags. NO emojis except 1-2 max. Write like a real Google review - calm, helpful, factual with a personal touch. NOT excited, NOT hype.',
+            'Facebook': 'STYLE: Facebook post. Casual and conversational, like telling a friend about your day. Light emojis ok. NO hashtags. NOT excited/hype like XHS. Do NOT use "姐妹们". Write like a normal Facebook status update - relaxed, personal, grounded.',
+            'Instagram': 'STYLE: Instagram caption. Short, visual, caption vibes. NO hashtags. Keep it aesthetic and brief.',
+            'XHS': 'STYLE: 小红书 post. Story-style, enthusiastic discovery feel. 姐妹们 tone ok here. MUST end with hashtags: #无痛变美 #体态矫正 #骨盆修复 #小颜术 #身心疗愈',
+            'TikTok': 'STYLE: TikTok caption. Short, punchy, trendy. Casual Gen-Z tone.'
+        };
+        const platformStyle = platformStyles[platform] || `STYLE: ${platform} post. Write naturally for this platform.`;
+
         // Per-draft persona angles for variation
         const draftAngles = [
             { angle: "SENSORY FOCUS", instruction: "Focus on how the treatment physically felt — textures, sensations, touch, comfort during the session." },
@@ -348,6 +358,7 @@ app.post('/api/generate-reviews', async (req, res) => {
         // Build the base scenario (shared across all 3 drafts)
         const baseScenario = `A customer just visited Anniks Beauty and had: ${servicesStr}.
 Platform: ${platform}. ${langInstruction}
+${platformStyle}
 Rating: ${rating}/5. ${ratingGuide}
 Tone: ${tone}. Length: ${lengthGuide}
 
