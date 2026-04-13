@@ -12,16 +12,42 @@ interface GenerateParams {
   language?: string;
 }
 
-export const generateReviewDrafts = async (params: GenerateParams): Promise<GeneratedDraft[]> => {
-  const response = await fetch('/api/generate-reviews', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params)
-  });
+const MAX_RETRIES = 2;
 
-  if (!response.ok) {
-    throw new Error("Review generation temporarily unavailable. Please try again.");
+async function fetchWithRetry(params: GenerateParams): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch('/api/generate-reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      });
+
+      if (response.ok) return response;
+
+      // Don't retry 4xx client errors
+      if (response.status >= 400 && response.status < 500) {
+        throw new Error("Review generation temporarily unavailable. Please try again.");
+      }
+
+      lastError = new Error(`Server error ${response.status}`);
+    } catch (err: any) {
+      lastError = err;
+    }
+
+    // Wait before retrying (1s, then 2s)
+    if (attempt < MAX_RETRIES) {
+      await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
+    }
   }
+
+  throw lastError || new Error("Review generation temporarily unavailable. Please try again.");
+}
+
+export const generateReviewDrafts = async (params: GenerateParams): Promise<GeneratedDraft[]> => {
+  const response = await fetchWithRetry(params);
 
   const data = await response.json();
   const draftsText: string[] = data.drafts;
