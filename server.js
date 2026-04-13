@@ -331,7 +331,10 @@ Write one review draft as this customer.`;
             return callMiniMax(apiKey, modelName, systemPrompt, prompt, temperature);
         });
 
-        const drafts = await Promise.all(draftPromises);
+        let drafts = await Promise.all(draftPromises);
+
+        // Filter out empty drafts (MiniMax occasionally returns empty)
+        drafts = drafts.filter(d => d && d.trim() !== '');
 
         res.json({ drafts });
 

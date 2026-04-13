@@ -1202,7 +1202,7 @@ export const CustomerFlow = () => {
 
                 <div className="p-5">
                   <textarea
-                    value={mainDraft?.text || "Generating..."}
+                    value={mainDraft?.text || ""}
                     onChange={(e) => handleDraftEdit(p, e.target.value)}
                     className="w-full text-sm text-gray-700 leading-relaxed mb-4 font-medium font-sans bg-transparent border-0 resize-none focus:ring-0 p-0"
                     rows={6}
