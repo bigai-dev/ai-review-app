@@ -188,23 +188,63 @@ async function generateDraft(systemPrompt, userPrompt, temperature) {
 // Each persona gives the AI a unique life situation to write from.
 // On each generation, 3 are randomly selected (Fisher-Yates) so every draft sounds like a different person.
 const CUSTOMER_PERSONAS = [
-    "30s office worker with desk posture problems. Sits 10 hours a day, back and neck always aching.",
-    "Mom of two toddlers, finally carved out 'me time'. Husband watching the kids for once.",
-    "Came with her bestie who's a regular. Was skeptical about non-invasive body sculpting actually working.",
-    "Loyal client, 5th visit. Already saw her jawline change, here for posture correction now.",
-    "Getting married in 2 months. Wants her face shape and posture to look perfect in the wedding photos.",
-    "Tried chiropractor and massage before for her posture. Nothing stuck long-term.",
-    "Colleague's face literally changed after a few sessions. Had to find out what this place does.",
-    "40s professional, noticing her body shape shifting after pregnancy. Looking for something gentle that actually works.",
-    "Saw Anniks on XHS/小红书, the before-after photos looked real so decided to try.",
-    "Birthday treat to herself. Splurged on the full facial contour package.",
-    "Scared of pain. Tried bone-setting before and it was traumatic. Very cautious this time.",
-    "Auntie who's done every facial and body treatment out there. Hard to impress.",
-    "Brought her mother here for posture correction. Reviewing on mom's behalf.",
-    "Post-CNY recovery. Face puffy, body stiff from too much eating and sitting around.",
-    "Stressed from work deadlines, posture getting worse, jaw clenching at night. Needed a reset.",
-    "Fitness girl who works out regularly but can't fix her pelvic tilt on her own.",
-    "New mom dealing with postpartum body changes. Looking for gentle recovery options."
+    // --- Office & Work Life ---
+    "30s office worker, sits 10 hours a day. Back and neck always aching, posture getting worse. Colleague told her about this place.",
+    "Stressed from work deadlines, jaw clenching at night, tension headaches every week. Needs a physical reset, not just mental.",
+    "Remote worker who's been WFH for 3 years. Rounded shoulders and tech neck from the laptop setup. Finally doing something about it.",
+    "Corporate lawyer, always in heels and sitting in meetings. Lower back pain became unbearable. Colleague's posture visibly changed after coming here.",
+    "Teacher who stands all day. Knee and hip pain from bad alignment. Physiotherapy helped temporarily but nothing stuck.",
+
+    // --- Moms & Family ---
+    "Mom of two toddlers, finally carved out 'me time'. Husband watching the kids so she can have this one session.",
+    "Brought her mother here for posture correction. Mom was reluctant at first but loved it. Reviewing on mom's behalf.",
+    "40s professional, body shape shifted after pregnancy. Looking for something gentle that actually works, not extreme.",
+    "New mom, 4 months postpartum. Body doesn't feel like hers anymore. Wants gentle recovery, not gym bootcamp.",
+    "Daughter bought this as a Mother's Day gift for her mom. Mom was skeptical but came out smiling.",
+    "Pregnant friend recommended this for postpartum recovery. Finally came 6 months after giving birth.",
+
+    // --- Social Discovery ---
+    "Came with her bestie who's been coming for months. Was skeptical but her friend's jawline change was undeniable.",
+    "Colleague's face literally changed after a few sessions. Had to find out what this place actually does.",
+    "Saw Anniks on XHS/小红书, the before-after photos looked real (not filtered) so decided to try.",
+    "Husband noticed her sister's face looked different at a family dinner. Sister spilled the secret, so she booked immediately.",
+    "Gym buddy told her about a place that fixed her pelvic tilt without exercise. Had to try it herself.",
+    "Overheard two ladies at a cafe raving about their face sculpting results. Googled it on the spot.",
+
+    // --- Life Events & Milestones ---
+    "Getting married in 2 months. Wants face shape and posture to look perfect in the wedding photos.",
+    "Birthday treat to herself. Turning 30 and investing in how she feels, not just how she looks.",
+    "Just went through a breakup. Treating herself as part of her 'glow up era'. Wants to feel confident again.",
+    "Graduating university next month. Wants to look sharp and feel great for the convocation photos.",
+    "Company annual dinner coming up. Wants to look her best in the evening dress without Photoshop.",
+
+    // --- Pain & Skepticism ---
+    "Scared of pain. Tried bone-setting (跌打) before and it was traumatic. Very cautious this time.",
+    "Tried chiropractor, traditional massage, and yoga for her posture. Nothing stuck long-term. Last resort.",
+    "Auntie who's done every facial and body treatment in KL. Hard to impress, very picky.",
+    "Boyfriend thinks beauty treatments are a scam. Came secretly to prove him wrong with visible results.",
+    "Has been living with an asymmetric jaw for years. Dentist said it's muscular, not dental. Looking for alternatives.",
+
+    // --- Loyal & Returning ---
+    "Loyal client, 5th visit. Jawline already changed, here for posture correction this time.",
+    "Second visit. First time was so good she bought a package. Here to continue the progress.",
+    "Been coming monthly for 6 months. Friends keep asking what she's doing differently. She just smiles.",
+
+    // --- Seasonal & Situational ---
+    "Post-CNY recovery. Face puffy, body stiff from too much eating and sitting around for 2 weeks.",
+    "Just came back from a long-haul flight. Jet lag plus sitting for 12 hours destroyed her posture.",
+    "Raya is around the corner. Wants to look good in baju kurung without sucking in her stomach.",
+    "Year-end holiday treat. Used up her remaining annual leave to pamper herself before the new year.",
+
+    // --- Fitness & Active Lifestyle ---
+    "Fitness girl who works out 5x a week but can't fix her anterior pelvic tilt on her own.",
+    "Yoga instructor who noticed her own alignment was off. Came to get professionally assessed.",
+    "Marathon runner with recurring hip pain. Physio said her pelvis is tilted. Trying a different approach.",
+
+    // --- Unique Demographics ---
+    "University student, saved up from part-time job to try this. First time doing anything like this.",
+    "Expat living in KL for 2 years. Tried many wellness places but most were just spa-level. Looking for real results.",
+    "Flight attendant with chronic neck and shoulder issues from pulling luggage and standing in heels. Irregular schedule makes regular treatment hard."
 ];
 
 const PROMPTS_SYSTEM_INSTRUCTION = `
