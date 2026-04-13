@@ -462,6 +462,7 @@ export const CustomerFlow = () => {
   const [step, setStep] = useState(0);
   const [submissionId, setSubmissionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [privateFeedbackText, setPrivateFeedbackText] = useState('');
   const hasScanned = useRef(false);
 
@@ -1057,28 +1058,35 @@ export const CustomerFlow = () => {
     }
 
     setIsLoading(true);
-    const results: Record<Platform, GeneratedDraft[]> = {} as any;
+    setGenerationError(null);
 
-    // Parallel generation
-    await Promise.all(selectedPlatforms.map(async (p) => {
-      const pDrafts = await generateReviewDrafts({
-        platform: p,
-        tone: tone,
-        length: length,
-        services: selectedProducts,
-        highlights: highlights,
-        staffName: undefined,
-        therapistName: MOCK_THERAPISTS.find(t => t.id === therapistId)?.name,
-        rating: rating || 5,
-        language: reviewLanguage
-      });
-      results[p] = pDrafts;
-    }));
+    try {
+      const results: Record<Platform, GeneratedDraft[]> = {} as any;
 
-    setDrafts(results);
-    setGenerationCount(prev => prev + 1);
-    setIsLoading(false);
-    setStep(2);
+      // Parallel generation
+      await Promise.all(selectedPlatforms.map(async (p) => {
+        const pDrafts = await generateReviewDrafts({
+          platform: p,
+          tone: tone,
+          length: length,
+          services: selectedProducts,
+          highlights: highlights,
+          staffName: undefined,
+          therapistName: MOCK_THERAPISTS.find(t => t.id === therapistId)?.name,
+          rating: rating || 5,
+          language: reviewLanguage
+        });
+        results[p] = pDrafts;
+      }));
+
+      setDrafts(results);
+      setGenerationCount(prev => prev + 1);
+      setStep(2);
+    } catch (err: any) {
+      setGenerationError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderDrafts = () => {
@@ -1604,6 +1612,11 @@ export const CustomerFlow = () => {
           {isLoading ? (
             <motion.div key="loading" {...pageVariants}>
               {renderLoading()}
+            </motion.div>
+          ) : generationError ? (
+            <motion.div key="error" {...pageVariants} className="text-center py-12">
+              <p className="text-red-500 text-sm mb-4">{generationError}</p>
+              <Button onClick={handleGenerate} className="mx-auto">Try Again</Button>
             </motion.div>
           ) : (
             <>

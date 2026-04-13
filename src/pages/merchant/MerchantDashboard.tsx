@@ -269,7 +269,7 @@ export const MerchantDashboard = () => {
       if (res.ok) {
         const data = await res.json();
         setAiConfig({
-          model_name: data.model_name || 'gemini-3-flash-preview',
+          model_name: data.model_name || 'MiniMax-M2.7',
           system_prompt: data.system_prompt || '',
           selling_points: data.selling_points || [],
           temperature: data.temperature || 0.7
@@ -2415,7 +2415,7 @@ export const MerchantDashboard = () => {
                             onChange={e => setAiConfig({ ...aiConfig, model_name: e.target.value })}
                             className="w-full p-3 border border-gray-300 rounded-lg bg-white"
                           >
-                            <option value="gemini-3-flash-preview">Gemini 3.0 Flash (Fastest)</option>
+                            <option value="MiniMax-M2.7">MiniMax M2.7</option>
                           </select>
                           <p className="text-xs text-gray-400 mt-1">Select the AI model for generating reviews</p>
                         </div>

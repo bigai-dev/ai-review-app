@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
-import { GoogleGenAI, Type } from "@google/genai";
+// MiniMax M2.7 via OpenAI-compatible API (replaced Gemini)
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -103,7 +103,37 @@ const galleryUpload = multer({
     }
 });
 
-const apiKey = process.env.VITE_GEMINI_API_KEY;
+const apiKey = process.env.MINIMAX_API_KEY;
+
+async function callMiniMax(apiKey, model, systemPrompt, userPrompt, temperature) {
+    const response = await fetch('https://api.minimax.io/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature,
+            max_completion_tokens: 500
+        })
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(`MiniMax API error ${response.status}: ${err.error?.message || 'Unknown'}`);
+    }
+
+    const data = await response.json();
+    let text = data.choices?.[0]?.message?.content || '';
+    // Strip <think>...</think> reasoning tags
+    text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    return text;
+}
 
 // --- Customer Persona Pool ---
 // Each persona gives the AI a unique life situation to write from.
@@ -229,8 +259,8 @@ const getAiConfig = async () => {
 
 app.post('/api/generate-reviews', async (req, res) => {
     try {
-        if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
-            return res.status(500).json({ error: "Missing Server API Key" });
+        if (!apiKey) {
+            return res.status(500).json({ error: "Missing MiniMax API Key" });
         }
 
         const { platform, services, highlights, staffName, therapistName, rating, tone, length, language } = req.body;
@@ -240,10 +270,12 @@ app.post('/api/generate-reviews', async (req, res) => {
 
         // Use database config or fallback to hardcoded defaults
         const systemPrompt = aiConfig?.system_prompt || PROMPTS_SYSTEM_INSTRUCTION;
-        const modelName = aiConfig?.model_name || "gemini-2.5-flash";
+        // Force MiniMax model - override stale DB values from Gemini era
+        let modelName = aiConfig?.model_name || "MiniMax-M2.7";
+        if (modelName.toLowerCase().includes('gemini')) {
+            modelName = "MiniMax-M2.7";
+        }
         const temperature = aiConfig?.temperature ?? 0.95;
-
-        const ai = new GoogleGenAI({ apiKey });
 
         // Fetch knowledgebase entries that match the selected services
         const knowledgeEntries = await getKnowledgeForServices(services);
@@ -296,31 +328,10 @@ Write one review draft as this customer.`;
         const draftPromises = draftAngles.map(({ angle, instruction }, index) => {
             const persona = selectedPersonas[index];
             const prompt = `[${angle}]: ${instruction}\nYou are: ${persona}. Let this shape your story naturally.\n\n${baseScenario}`;
-            return ai.models.generateContent({
-                model: modelName,
-                contents: prompt,
-                config: {
-                    systemInstruction: systemPrompt,
-                    temperature,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: Type.STRING
-                    }
-                }
-            });
+            return callMiniMax(apiKey, modelName, systemPrompt, prompt, temperature);
         });
 
-        const responses = await Promise.all(draftPromises);
-
-        const drafts = responses.map(response => {
-            let text = response.text || "";
-            text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-            try {
-                return JSON.parse(text);
-            } catch {
-                return text;
-            }
-        });
+        const drafts = await Promise.all(draftPromises);
 
         res.json({ drafts });
 
@@ -424,7 +435,7 @@ const initDB = async () => {
         await pool.query(`
     CREATE TABLE IF NOT EXISTS ai_config (
       id TEXT PRIMARY KEY DEFAULT 'default',
-      model_name TEXT DEFAULT 'gemini-3-flash-preview',
+      model_name TEXT DEFAULT 'MiniMax-M2.7',
       system_prompt TEXT,
       selling_points TEXT,
       temperature REAL DEFAULT 0.7,
@@ -439,13 +450,13 @@ const initDB = async () => {
         const aiConfigCheck = await pool.query("SELECT * FROM ai_config WHERE id = 'default'");
         if (aiConfigCheck.rows.length === 0) {
             await pool.query("INSERT INTO ai_config (id, model_name, system_prompt, selling_points, temperature, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
-                ['default', 'gemini-2.5-flash', defaultSystemPrompt, defaultSellingPoints, 0.95, new Date().toISOString()]);
+                ['default', 'MiniMax-M2.7', defaultSystemPrompt, defaultSellingPoints, 0.95, new Date().toISOString()]);
             console.log("Seeded default AI configuration.");
         } else {
-            // Always sync the system prompt from code to DB on startup
-            await pool.query("UPDATE ai_config SET system_prompt = $1, updated_at = $2 WHERE id = 'default'",
-                [defaultSystemPrompt, new Date().toISOString()]);
-            console.log("Synced system prompt to database.");
+            // Always sync model name + system prompt from code to DB on startup
+            await pool.query("UPDATE ai_config SET model_name = $1, system_prompt = $2, updated_at = $3 WHERE id = 'default'",
+                ['MiniMax-M2.7', defaultSystemPrompt, new Date().toISOString()]);
+            console.log("Synced model name and system prompt to database.");
         }
 
         // Knowledgebase table
