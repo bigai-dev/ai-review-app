@@ -18,7 +18,7 @@ analytics, and AI-prompt tuning.
 
 ```bash
 # 1. Clone
-git clone https://github.com/jtpk2168/ai-review-app.git
+git clone https://github.com/bigai-dev/ai-review-app.git
 cd ai-review-app
 
 # 2. Install
