@@ -35,12 +35,11 @@ export const Login = () => {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-gray-50 overflow-hidden">
-            {/* Background - Desktop only */}
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
-              style={{ backgroundImage: "url('/Anniks_16-9-logo.jpeg')" }}
-            />
-            <div className="absolute inset-0 bg-black/20 z-0 hidden md:block" />
+            {/* Background - Desktop only (brand gradient) */}
+            <div className="absolute inset-0 z-0 hidden md:block bg-gradient-to-br from-brand-200 via-brand-400 to-brand-700" />
+            <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-accent-300/30 blur-3xl z-0 hidden md:block" />
+            <div className="absolute -bottom-32 -right-16 w-[28rem] h-[28rem] rounded-full bg-brand-200/40 blur-3xl z-0 hidden md:block" />
+            <div className="absolute inset-0 bg-brand-900/10 z-0 hidden md:block" />
 
             <div className="relative z-10 bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md border border-white/50">
                 <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Admin Login</h1>

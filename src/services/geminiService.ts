@@ -27,9 +27,11 @@ async function fetchWithRetry(params: GenerateParams): Promise<Response> {
 
       if (response.ok) return response;
 
-      // Don't retry 4xx client errors
+      // Don't retry 4xx client errors — surface the server's message if it has one
+      // (e.g. the "AI is busy, wait a minute" message when the free limit is hit).
       if (response.status >= 400 && response.status < 500) {
-        throw new Error("Review generation temporarily unavailable. Please try again.");
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "Review generation temporarily unavailable. Please try again.");
       }
 
       lastError = new Error("Review generation temporarily unavailable. Please try again.");

@@ -19,20 +19,11 @@ const ProtectedRoute = () => {
 
 const LandingPage = () => (
   <div className="relative min-h-screen w-full overflow-hidden font-sans selection:bg-brand-200">
-    {/* Background Wallpaper - Desktop */}
-    <div
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
-      style={{
-        backgroundImage: "url('/Anniks_16-9-logo.jpeg')",
-      }}
-    />
-    {/* Background Wallpaper - Mobile */}
-    <div
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 md:hidden"
-      style={{
-        backgroundImage: "url('/Anniks_9-16.jpeg')",
-      }}
-    />
+    {/* Gradient Background */}
+    <div className="absolute inset-0 z-0 bg-gradient-to-br from-brand-200 via-brand-400 to-brand-700" />
+    {/* Soft glow accents for depth */}
+    <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-accent-300/30 blur-3xl z-0" />
+    <div className="absolute -bottom-32 -right-16 w-[28rem] h-[28rem] rounded-full bg-brand-200/40 blur-3xl z-0" />
 
     {/* Subtle Overlay to ensure card pops */}
     <div className="absolute inset-0 bg-brand-900/10 z-10" />

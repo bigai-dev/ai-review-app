@@ -62,8 +62,11 @@ export const MerchantDashboard = () => {
 
   /* Mappings */
   const BRANCH_NAMES: Record<string, string> = {
-    'b1': 'Anniks Beauty Cheras',
-    'b2': 'Anniks Beauty Penang',
+    'b1': 'AI Review App Cheras',
+    'b2': 'AI Review App Penang',
+    'b3': 'AI Review App Kuala Lumpur',
+    'b4': 'AI Review App Johor Bahru',
+    'b5': 'AI Review App Ipoh',
   };
 
 

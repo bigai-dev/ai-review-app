@@ -32,7 +32,7 @@ const TRANSLATIONS = {
     addFor: "Post here for",
     uploadPhotos: "Add Photos (Optional)",
     uploadTip: "Upload photos to generate specific reviews!",
-    generating: "Preparing your Anniks experience...",
+    generating: "Preparing your experience...",
     draftsTitle: "Review Drafts",
     draftsSub: "AI-generated specifically for you",
     copy: "Copy",
@@ -91,7 +91,7 @@ const TRANSLATIONS = {
     addFor: "Pos di sini untuk",
     uploadPhotos: "Tambah Foto (Pilihan)",
     uploadTip: "Muat naik foto untuk ulasan yang lebih tepat!",
-    generating: "Sedang menyediakan pengalaman Anniks anda...",
+    generating: "Sedang menyediakan pengalaman anda...",
     draftsTitle: "Draf Ulasan",
     draftsSub: "Dijana AI khas untuk anda",
     copy: "Salin",
@@ -151,7 +151,7 @@ const TRANSLATIONS = {
     addFor: "发布以获得",
     uploadPhotos: "添加照片（可选）",
     uploadTip: "上传照片以生成专属评论！",
-    generating: "正在准备您的 Anniks 体验...",
+    generating: "正在准备您的体验...",
     draftsTitle: "评论草稿",
     draftsSub: "为您专属生成的 AI 评论",
     copy: "复制",
@@ -359,6 +359,59 @@ const getPlatformUrl = (platform: Platform, branchId?: string) => {
   if (platform === Platform.INSTAGRAM) return "https://www.instagram.com/create/story";
   if (platform === Platform.XHS) return "https://www.xiaohongshu.com";
   return "https://tiktok.com";
+};
+
+// --- Helper: Copy text to clipboard (works on iPhone over a local network too) ---
+// The modern navigator.clipboard API only works on https:// or http://localhost.
+// On a phone opening the app via http://<computer-ip> it's blocked, so we fall
+// back to the legacy selection + execCommand method (which iOS Safari allows).
+const copyTextToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy method below
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    // iOS will NOT copy from an invisible (opacity:0 / 0-size) element, even
+    // though execCommand still reports success. Place it off-screen at real
+    // size instead, with a >=16px font so iOS doesn't zoom.
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    textarea.style.fontSize = '16px';
+    textarea.setAttribute('readonly', '');
+    document.body.appendChild(textarea);
+
+    const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      // iOS Safari needs an editable element + explicit selection range
+      textarea.contentEditable = 'true';
+      textarea.readOnly = false;
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      textarea.setSelectionRange(0, 999999);
+    } else {
+      textarea.select();
+    }
+
+    const ok = document.execCommand('copy');
+    window.getSelection()?.removeAllRanges();
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
 };
 
 // --- Redirect Modal ---
@@ -1106,12 +1159,8 @@ export const CustomerFlow = () => {
 
     // The Auto-Post Logic (with Native Share Fallback)
     const handlePost = async (platform: Platform, text: string) => {
-      // 1. Copy text to clipboard regardless
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch (e) {
-        console.error("Clipboard write failed", e);
-      }
+      // 1. Copy text to clipboard regardless (with iOS / local-network fallback)
+      await copyTextToClipboard(text);
 
       // 2. Try Native Share (Mobile) — only TikTok reliably supports file sharing via Web Share API.
       //    IG/XHS trigger a file download instead of the native share sheet, so they use the redirect modal.
@@ -1213,10 +1262,14 @@ export const CustomerFlow = () => {
                       variant="secondary"
                       size="sm"
                       className="w-full text-xs"
-                      onClick={() => {
-                        navigator.clipboard.writeText(mainDraft.text);
-                        setCopiedPlatform(p);
-                        setTimeout(() => setCopiedPlatform(prev => prev === p ? null : prev), 2000);
+                      onClick={async () => {
+                        const ok = await copyTextToClipboard(mainDraft.text);
+                        if (ok) {
+                          setCopiedPlatform(p);
+                          setTimeout(() => setCopiedPlatform(prev => prev === p ? null : prev), 2000);
+                        } else {
+                          alert("Couldn't copy automatically. Please tap and hold the review text to select and copy it.");
+                        }
                       }}
                     >
                       <Copy className="w-3.5 h-3.5 mr-2" /> {copiedPlatform === p ? t.copied : t.copy}
@@ -1601,7 +1654,7 @@ export const CustomerFlow = () => {
 
   return (
     <MobileLayout
-      title="Anniks Beauty"
+      title="AI Review App"
       step={step}
       totalSteps={5}
       onBack={step > 0 && step < 4 ? () => setStep(step - 1) : undefined}

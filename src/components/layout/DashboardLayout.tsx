@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LayoutDashboard, Users, Trophy, Settings, BarChart3, LogOut, ChevronDown, User, Pencil } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { LogoMark } from '../ui/LogoMark';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -72,8 +73,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, acti
       <aside className="w-64 bg-slate-900 text-white flex flex-col hidden md:flex">
         <div className="p-6 border-b border-slate-800">
           <div className="font-bold text-xl tracking-tight flex items-center gap-2">
-            <img src="/Anniks-logo.png" alt="Anniks Beauty" className="w-10 h-10 object-contain" />
-            Anniks Beauty
+            <LogoMark className="w-10 h-10" />
+            AI Review App
           </div>
         </div>
         <nav className="flex-1 p-4 space-y-1">

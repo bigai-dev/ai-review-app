@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { useApp, Language } from '../../context/AppContext';
-import { MOCK_MERCHANT } from '../../constants';
+import { LogoMark } from '../ui/LogoMark';
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -40,12 +40,11 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50/50 flex justify-center font-sans antialiased relative">
-      {/* Background - Desktop only */}
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0 hidden md:block"
-        style={{ backgroundImage: "url('/Anniks_16-9-logo.jpeg')" }}
-      />
-      <div className="fixed inset-0 bg-black/30 z-0 hidden md:block" />
+      {/* Background - Desktop only (brand gradient) */}
+      <div className="fixed inset-0 z-0 hidden md:block bg-gradient-to-br from-brand-200 via-brand-400 to-brand-700" />
+      <div className="fixed -top-24 -left-24 w-96 h-96 rounded-full bg-accent-300/30 blur-3xl z-0 hidden md:block" />
+      <div className="fixed -bottom-32 -right-16 w-[28rem] h-[28rem] rounded-full bg-brand-200/40 blur-3xl z-0 hidden md:block" />
+      <div className="fixed inset-0 bg-brand-900/10 z-0 hidden md:block" />
 
       <div className="relative z-10 w-full max-w-md bg-white shadow-2xl shadow-gray-200/50 min-h-screen flex flex-col overflow-hidden">
 
@@ -66,11 +65,11 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                 </button>
               )}
 
-              <img src={MOCK_MERCHANT.logoUrl} alt="Logo" className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-100" />
+              <LogoMark className="w-10 h-10" />
 
               <div className="flex flex-col justify-center">
                 <h1 className="font-bold text-gray-900 text-lg leading-none tracking-tight">
-                  {title || 'Anniks Beauty'}
+                  {title || 'AI Review App'}
                 </h1>
                 {step < totalSteps - 1 && (
                   <p className="text-[10px] text-gray-400 font-medium mt-0.5">

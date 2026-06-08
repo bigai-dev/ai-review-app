@@ -8,7 +8,7 @@ type Product = {
 };
 
 export const MOCK_MERCHANT = {
-  name: "Anniks Beauty",
+  name: "AI Review App",
   tagline: "养生年轻化 — Pain-free beauty & wellness",
   logoUrl: "/Anniks-logo.png",
   description: "无痛安全的变美变健康方式 — Non-invasive body sculpting, posture correction & holistic wellness.",
@@ -84,24 +84,47 @@ export const MOCK_BRANCHES: Branch[] = [
     name: 'Penang',
     address: 'Iconic Point, 99(2F, Jalan Iconic Point, 14100 Simpang Ampat, Penang',
     googlePlaceId: 'TBD'
+  },
+  {
+    id: 'b3',
+    name: 'Kuala Lumpur',
+    address: 'Lot 10, Jalan Bukit Bintang, 55100 Kuala Lumpur',
+    googlePlaceId: 'TBD'
+  },
+  {
+    id: 'b4',
+    name: 'Johor Bahru',
+    address: 'KSL City Mall, Jalan Seladang, 80250 Johor Bahru, Johor',
+    googlePlaceId: 'TBD'
+  },
+  {
+    id: 'b5',
+    name: 'Ipoh',
+    address: 'Ipoh Parade, 105 Jalan Sultan Abdul Jalil, 30450 Ipoh, Perak',
+    googlePlaceId: 'TBD'
   }
 ];
 
 export const MOCK_STAFF: Staff[] = [];
 
 export const MOCK_THERAPISTS = [
-  { id: 't1', name: 'Annika', branchId: 'b1' },
-  { id: 't2', name: 'Callie', branchId: 'b1' },
-  { id: 't3', name: 'Florence', branchId: 'b1' },
-  { id: 't4', name: 'Tracy', branchId: 'b1' },
-  { id: 't5', name: 'Victoria', branchId: 'b2' },
-  { id: 't6', name: 'Callie', branchId: 'b2' },
-  { id: 't7', name: 'Jolin', branchId: 'b2' }
+  { id: 't1', name: 'Mei Ling', branchId: 'b1' },
+  { id: 't2', name: 'Priya', branchId: 'b1' },
+  { id: 't3', name: 'Sarah', branchId: 'b1' },
+  { id: 't4', name: 'Hannah', branchId: 'b2' },
+  { id: 't5', name: 'Aisha', branchId: 'b2' },
+  { id: 't6', name: 'Grace', branchId: 'b3' },
+  { id: 't7', name: 'Jasmine', branchId: 'b3' },
+  { id: 't8', name: 'Nadia', branchId: 'b3' },
+  { id: 't9', name: 'Rachel', branchId: 'b4' },
+  { id: 't10', name: 'Sofia', branchId: 'b4' },
+  { id: 't11', name: 'Wei Wen', branchId: 'b5' },
+  { id: 't12', name: 'Lina', branchId: 'b5' }
 ];
 
 export const MOCK_CAMPAIGN: Campaign = {
   id: 'c1',
-  name: 'Anniks Beauty Experience',
+  name: 'AI Review App Experience',
   status: 'Active',
   requiredPlatform: Platform.GOOGLE,
   bonusPlatforms: [Platform.FACEBOOK, Platform.INSTAGRAM, Platform.XHS],

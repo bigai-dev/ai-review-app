@@ -1,6 +1,6 @@
 {
-  "name": "Anniks Beauty",
-  "description": "AI-powered customer review collection app for Anniks Beauty — body sculpting, posture correction & wellness studio.",
+  "name": "AI Review App",
+  "description": "AI-powered customer review collection app — body sculpting, posture correction & wellness studio.",
   "requestFramePermissions": [
     "camera"
   ]

@@ -7,7 +7,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createClient as createTursoClient } from '@libsql/client/web';
+import { createClient as createTursoClient } from '@libsql/client';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 // ES Module dirname equivalent
@@ -103,6 +103,7 @@ const galleryUpload = multer({
     }
 });
 
+const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
 const geminiApiKey = process.env.VITE_GEMINI_API_KEY;
 const minimaxApiKey = process.env.MINIMAX_API_KEY;
 
@@ -133,6 +134,37 @@ async function callGemini(apiKey, model, systemPrompt, userPrompt, temperature) 
     // Clean up JSON wrapper if present
     text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
     try { text = JSON.parse(text); } catch {}
+    return text;
+}
+
+async function callDeepSeek(apiKey, model, systemPrompt, userPrompt, temperature) {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature,
+            max_tokens: 500
+        })
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        const msg = err.error?.message || `HTTP ${response.status}`;
+        throw new Error(`DeepSeek error: ${msg}`);
+    }
+
+    const data = await response.json();
+    let text = data.choices?.[0]?.message?.content || '';
+    // Strip any <think>...</think> reasoning tags just in case
+    text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     return text;
 }
 
@@ -169,19 +201,39 @@ async function callMiniMax(apiKey, model, systemPrompt, userPrompt, temperature)
 // Primary: Gemini Flash Lite (0.86s, no reasoning overhead)
 // Fallback: MiniMax M2.7-highspeed (1.2s) if Gemini fails
 async function generateDraft(systemPrompt, userPrompt, temperature) {
-    // Try Gemini Flash Lite first
+    let primaryError = null;
+    // Primary: DeepSeek V4 (flash)
+    if (deepseekApiKey) {
+        try {
+            return await callDeepSeek(deepseekApiKey, 'deepseek-v4-flash', systemPrompt, userPrompt, temperature);
+        } catch (err) {
+            primaryError = err;
+            console.warn('[generate] DeepSeek failed, falling back:', err.message);
+        }
+    }
+    // Fallback: Gemini Flash Lite
     if (geminiApiKey) {
         try {
             return await callGemini(geminiApiKey, 'gemini-2.5-flash-lite', systemPrompt, userPrompt, temperature);
         } catch (err) {
+            if (!primaryError) primaryError = err;
             console.warn('[generate] Gemini failed, falling back to MiniMax:', err.message);
         }
     }
-    // Fallback to MiniMax highspeed
+    // Fallback: MiniMax highspeed
     if (minimaxApiKey) {
         return await callMiniMax(minimaxApiKey, 'MiniMax-M2.7-highspeed', systemPrompt, userPrompt, temperature);
     }
+    // No provider succeeded — surface the real reason (e.g. a quota message)
+    if (primaryError) throw primaryError;
     throw new Error('No AI provider available');
+}
+
+// Recognise "you've hit the rate / quota limit" style errors so we can tell the
+// client to slow down instead of letting it hammer retries (which burns quota).
+function isRateLimitError(err) {
+    const m = (err && err.message ? err.message : '').toLowerCase();
+    return m.includes('quota') || m.includes('rate limit') || m.includes('429') || m.includes('exceeded');
 }
 
 // --- Customer Persona Pool ---
@@ -348,7 +400,7 @@ const getAiConfig = async () => {
 
 app.post('/api/generate-reviews', async (req, res) => {
     try {
-        if (!geminiApiKey && !minimaxApiKey) {
+        if (!deepseekApiKey && !geminiApiKey && !minimaxApiKey) {
             return res.status(500).json({ error: "No AI API keys configured" });
         }
 
@@ -454,6 +506,11 @@ app.post('/api/generate-reviews', async (req, res) => {
 
     } catch (error) {
         console.error("Server AI Error:", error);
+        // Rate/quota errors → 429 so the client shows a "busy, wait a moment"
+        // message and does NOT retry (retrying just burns more of the quota).
+        if (isRateLimitError(error)) {
+            return res.status(429).json({ error: "The AI is busy right now (free usage limit reached). Please wait about a minute and try again." });
+        }
         res.status(500).json({ error: error.message });
     }
 });
@@ -629,6 +686,9 @@ const initDB = async () => {
         // Seed default branches
         await pool.query(`INSERT INTO branches (id, name) VALUES ('b1', 'Cheras') ON CONFLICT (id) DO NOTHING`);
         await pool.query(`INSERT INTO branches (id, name) VALUES ('b2', 'Penang') ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO branches (id, name) VALUES ('b3', 'Kuala Lumpur') ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO branches (id, name) VALUES ('b4', 'Johor Bahru') ON CONFLICT (id) DO NOTHING`);
+        await pool.query(`INSERT INTO branches (id, name) VALUES ('b5', 'Ipoh') ON CONFLICT (id) DO NOTHING`);
 
         // Staff table
         await pool.query(`
@@ -640,17 +700,22 @@ const initDB = async () => {
         )`);
 
         // Seed default staff (therapists per branch)
-        const staffCount = (await pool.query('SELECT COUNT(*) FROM staff')).rows[0].count;
+        const staffCount = (await pool.query('SELECT COUNT(*) AS count FROM staff')).rows[0].count;
         if (parseInt(staffCount) === 0) {
             await pool.query(`
                 INSERT INTO staff (id, name, role, branch_id) VALUES
-                ('t1', 'Annika', 'therapist', 'b1'),
-                ('t2', 'Callie', 'therapist', 'b1'),
-                ('t3', 'Florence', 'therapist', 'b1'),
-                ('t4', 'Tracy', 'therapist', 'b1'),
-                ('t5', 'Victoria', 'therapist', 'b2'),
-                ('t6', 'Callie', 'therapist', 'b2'),
-                ('t7', 'Jolin', 'therapist', 'b2')
+                ('t1', 'Mei Ling', 'therapist', 'b1'),
+                ('t2', 'Priya', 'therapist', 'b1'),
+                ('t3', 'Sarah', 'therapist', 'b1'),
+                ('t4', 'Hannah', 'therapist', 'b2'),
+                ('t5', 'Aisha', 'therapist', 'b2'),
+                ('t6', 'Grace', 'therapist', 'b3'),
+                ('t7', 'Jasmine', 'therapist', 'b3'),
+                ('t8', 'Nadia', 'therapist', 'b3'),
+                ('t9', 'Rachel', 'therapist', 'b4'),
+                ('t10', 'Sofia', 'therapist', 'b4'),
+                ('t11', 'Wei Wen', 'therapist', 'b5'),
+                ('t12', 'Lina', 'therapist', 'b5')
             `);
         }
 
