@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     server: {
-      port: 3002,
+      port: 3008,
       host: '0.0.0.0',
       // Allow the website to be opened through a dev tunnel link
       allowedHosts: ['.devtunnels.ms', '.trycloudflare.com'],

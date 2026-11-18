@@ -34,10 +34,10 @@ cp .env.example .env.local
 
 # 4. Run (two terminals)
 npm run server   # backend on http://localhost:3005
-npm run dev      # frontend on http://localhost:3002
+npm run dev      # frontend on http://localhost:3008
 ```
 
-Open **http://localhost:3002** in your browser.
+Open **http://localhost:3008** in your browser.
 
 ### Logging in as the merchant
 
