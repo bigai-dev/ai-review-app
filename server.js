@@ -151,7 +151,10 @@ async function callDeepSeek(apiKey, model, systemPrompt, userPrompt, temperature
                 { role: 'user', content: userPrompt }
             ],
             temperature,
-            max_tokens: 500
+            max_tokens: 500,
+            // deepseek-flash "thinks" by default: ~2x slower, eats into
+            // max_tokens, and ignores temperature (so drafts vary less).
+            thinking: { type: 'disabled' }
         })
     });
 
@@ -198,14 +201,14 @@ async function callMiniMax(apiKey, model, systemPrompt, userPrompt, temperature)
     return text;
 }
 
-// Primary: Gemini Flash Lite (0.86s, no reasoning overhead)
-// Fallback: MiniMax M2.7-highspeed (1.2s) if Gemini fails
+// Primary: DeepSeek V4.1 Flash, thinking off (~1-1.5s)
+// Fallbacks: Gemini Flash Lite, then MiniMax M2.7-highspeed
 async function generateDraft(systemPrompt, userPrompt, temperature) {
     let primaryError = null;
-    // Primary: DeepSeek V4 (flash)
+    // Primary: DeepSeek V4.1 Flash ('deepseek-v4-flash' is a retired name)
     if (deepseekApiKey) {
         try {
-            return await callDeepSeek(deepseekApiKey, 'deepseek-v4-flash', systemPrompt, userPrompt, temperature);
+            return await callDeepSeek(deepseekApiKey, 'deepseek-flash', systemPrompt, userPrompt, temperature);
         } catch (err) {
             primaryError = err;
             console.warn('[generate] DeepSeek failed, falling back:', err.message);
@@ -464,7 +467,7 @@ app.post('/api/generate-reviews', async (req, res) => {
         const selectedPersonas = shuffled.slice(0, 3);
 
         // Make 3 parallel API calls, each with its own scenario
-        // Primary: Gemini Flash Lite (~0.9s) | Fallback: MiniMax-highspeed (~1.2s)
+        // Primary: DeepSeek Flash (~1-1.5s) | Fallbacks: Gemini Flash Lite, MiniMax-highspeed
         const draftPromises = draftAngles.map(({ angle, instruction }, index) => {
             const persona = selectedPersonas[index];
 
